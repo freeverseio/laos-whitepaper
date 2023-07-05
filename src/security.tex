@@ -1,0 +1,142 @@
+\section{Security}\label{security}
+
+LAOS core components are based on software and consensus protocols
+that are already in use,
+and analyzed extensively by other teams.
+In this sense, LAOS security analysis is different from 
+projects proposing entirely new, still untested, protocols;
+in LAOS case, the analysis mostly consists of, for every component
+in its architecture, relying on previously published
+comprehensive studies of their attack vectors and potential mitigation.
+
+\subsection{Ownership Parachain}\label{sec:security-parachain}
+
+The Ownership Parachain will
+implement the default Parachain pattern that relies on the Polkadot
+Relay Chain to provide block finality \cite{parachain-protocol}, \cite{parachain-protocol2}.
+This protocol enables efficient inhomogeneous sharding,
+and has been live in mainnet, in Kusama first, since
+October'19, and then in Polkadot, since March'20.
+
+Parachains are free to decide their runtime and are encouraged to focus on 
+specialization, in contrast to the one-runtime-fits-all
+homogeneous sharding being built in Ethereum 2.0.
+LAOS will diligently adhere to this pattern,
+specializing in all aspects relevant to Living Assets.
+The Ownership Chain will use the default Parachain pattern:
+Nominated Proof of Stake (NPoS) consensus algorithm,
+with GRANDPA providing finality over BABE block production.
+We refer the reader to the thorough theoretical analysis presented in\cite{polkadotExplained}
+for full details.
+
+It is essential to note that despite the freedom that Parachains have to design
+their inner details, every single transaction of every Parachain is eventually
+verified by the required majority of validators in the Relay Chain before
+being included in a Polkadot block. 
+
+Since the consolidation in Polkadot of Parachain's 
+invalid transactions is prevented by the Relay Chain, 
+the only significant attack vectors relevant to Parachains
+are related to censorship and data availability.
+
+Censorship corresponds to Parachain collators not including one or more
+transactions based on criteria different from those specified by the
+protocol, e.g., based on the sender address. To prevent these attacks,
+a Parachain only needs to ensure that there are some neutral collators,
+but not necessarily a majority.
+Theoretically, the censorship problem is solved with 
+having just one honest collator,
+as analyzed in\cite{collators}.
+
+Data availability attacks appear if the Parachain collators collude to 
+withhold block data, or the corresponding Proof of Validity (PoV), to the 
+validators in the Relay Chain. 
+Polkadot's protocol mitigates this 
+attack severely by using Erasure Coding\cite{al2018fraud}, which
+adds redundancy on the block/PoV data 
+made availability by a minimal subset of honest collators, and enables Relay Chain
+validators to reconstruct its entirety out
+of a small set of randomly queried data.
+
+In summary, the standard Parachain-in-Polkadot level of security 
+protects all features assigned to the Ownership Parachain,
+including transfers of Living Assets among owners as well as to
+sibling Parachains, management of the LAOS token, 
+transaction fees, treasury funding, storage of Evochain states and 
+management of their runtimes.
+
+\subsection{Trustless Bridge}\label{sec:security-bridge}
+
+The design of the bridges that will connect the Ownership Chain 
+and the Evochains is built around the same technology that 
+will connect Polkadot and Kusama via BridgeHub\cite{bridgehub}.
+
+This bridge design decouples the consensus mechanism
+and the state machine, requiring both networks to run 
+{\it on-chain consensus clients}, also known as {\it on-chain light clients},
+that only track consensus proofs of state
+transitions instead of the full state transitions.
+References \cite{SeunLanlege} and \cite{snowfork} provide a good introduction to 
+known attack vectors to light client based bridges in systems
+that either do not track the signatures of all validators, or do 
+not implement accountability on validators that provide multiple signatures
+over different block proposals. 
+
+Instead, the bridge implementation is based on the on-chain light
+client used by Polkadot and Kusama~\cite{parity-bridges}, 
+designed only for systems whose finality is provided by the GRANDPA finality gadget.
+Eventually, the bridge will become more efficient when Polkadot integrates
+{\it on-chain accountable light clients}, which use signature
+verification via Zero-Knowledge schemes, and introduce on-chain
+accountability mechanisms. We refer the reader to~\cite{ciobotaru2022accountable}
+for a thorough analysis of attack vectors.
+
+Regarding data withholding attack vectors,
+it is important to consider that any actor can 
+relay block data and the corresponding transition proofs
+between the Ownership Chain and the Evochains.
+The attack can be straightforwardly mitigated by having at least one
+actor with incentives in the LAOS platform running a node of the
+Evochain, even if in read-only mode, capable of relaying 
+the Evochain data as new blocks are produced.
+
+Moreover, the Evochain validators have their own incentives
+to relay this data because they receive rewards
+in the form of LAOS tokens
+upon inclusion of new valid blocks in the Ownership Chain.
+
+
+\subsection{Evochains}\label{sec:security-evochains}
+
+Evochains are Substrate-based solo chains with GRANDPA finality,
+supporting asset mint and evolution at protocol level.
+The security of Evochains depends
+on the standard game-theoretical incentive system that
+leads to more than two-thirds of their validators following
+the protocol honestly,
+as in any Substrate-based chain with GRANDPA finality.
+A comprehensive analysis of GRANDPA, including a listing of 
+attack vectors and their potential mitigation, can be found in\cite{grandpa}.
+
+Evochain validators will be rewarded for including valid mint and evolve
+transactions through transaction fees in LAOS tokens obtained from
+the Ownership Chain via the trustless bridge. Likewise, they will be rewarded
+when new block headers are correctly included in the Ownership Chain,
+in this case, in native LAOS tokens. 
+This incentive system encourages Evochain validators
+to not only provide data to the bridge relayers
+but also potentially take on the role of bridge relayers themselves.
+
+The scalable architecture discussed in Section \ref{sec:architecture-future} 
+will enable the Evochain validators, as soon as their number is 
+sufficiently large, to greatly scale transaction throughput
+while providing the same level of
+security, via the standard Relay Chain pattern. We refer
+again to \cite{grandpa} for a comprehensive security analysis of 
+the Relay Chain protocol.
+
+
+
+
+
+

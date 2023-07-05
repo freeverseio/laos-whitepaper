@@ -1,0 +1,87 @@
+% \documentclass[9pt,oneside]{amsart}
+\documentclass{article}
+\usepackage{xurl}
+\usepackage{cancel}
+\usepackage{xspace}
+\usepackage{graphicx}
+\usepackage{multicol,caption}
+\usepackage{subfig}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[a4paper,width=170mm,top=18mm,bottom=22mm,includeheadfoot]{geometry}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{verbatim}
+\usepackage{caption}
+\usepackage{cite}
+\usepackage{float}
+\usepackage{pdflscape}
+\usepackage{mathtools}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{afterpage}
+\usepackage{multido}
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{algorithm2e} % Required for pseudo-code
+\usepackage{tabularx}
+\graphicspath{{figs/}}
+\newenvironment{Figure}
+  {\par\medskip\noindent\minipage{\linewidth}}
+  {\endminipage\par\medskip}
+
+\PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
+\unitlength=1mm
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+ 
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\newcommand*\eg{e.g.\@\xspace}
+\newcommand*\Eg{e.g.\@\xspace}
+\newcommand*\ie{i.e.\@\xspace}
+\newcommand{\fig}[1]{Figure \ref{#1}}
+\newcommand{\bref}[1]{(\ref{#1})}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+\newcommand{\nn}{\nonumber \\}
+\def\espai{\;\;\;\;\;\;\;}
+
+\title{LAOS: Vision for a Scalable, Truly Non-Custodial,\\Dynamic NFT Protocol with Universal Minting \& Evolution }
+\author{
+  Alessandro Siniscalchi,
+  Toni Mateos, PhD\footnote{PhD in String Theory, University of Barcelona \& Imperial College of London.}
+  $ $ and Alun Evans, PhD\footnote{PhD in Medical Physics, University College London.}
+  \\
+  Co-Founders @ Freeverse \& LAOS \\
+  \{alessandro, toni, alun\}@freeverse.io
+}
+\date{May, 2023}
+
+
+
+\begin{document}
+
+\maketitle
+
+\input{src/abstract}
+
+
+\setlength{\columnsep}{20pt}
+\begin{multicols}{2}
+
+\input{src/overview}
+\input{src/introduction}
+\input{src/living_assets}
+\input{src/architecture}
+\input{src/bridgeless}
+\input{src/security}
+\input{src/conclusion}
+\input{src/acknowledgments}
+\input{src/references}
+
+\end{multicols}
+
+\end{document}

@@ -1,0 +1,184 @@
+\section{Bridgeless Minting \& Evolution}\label{sec:bridgeless-tech}
+
+The architecture described in section \ref{sec:architecture} supports 
+a pattern capable of enabling the minting and evolution
+of assets in LAOS, while their trading (and any other ownership-related
+concept) is managed in any other blockchain of choice, as 
+long as it supports smart contracts; this applies to both EVM and
+non-EVM compatible cases. We stress that this does not require any
+type of bridge, neither trusted nor trustless.
+
+We first introduce the concept of
+Universal Location in Section \ref{sec:universal-location},
+and then describe a simplified version of the pattern which 
+only allows bridgeless evolution (Section \ref{sec:bridgless-evo}).
+We conclude discussing the full-fledged flow for bridgeless minting and evolution
+in Section \ref{sec:bridgless-all}.
+
+\subsection{Universal Location}\label{sec:universal-location}
+
+One recent standard that LAOS will leverage is that of {\it Universal
+Location}. It was introduced by Polkadot as a natural evolution
+of the {\it MultiLocation} standard that was already in use within their
+ecosystem, as part of their Cross-Consensus Messaging (XCM)
+pattern\cite{multilocation}.
+
+The fact that the Relay Chain serves as consensus parent for all
+Parachains has enabled the design of trustless message-passing patterns
+among Parachains, for example, by relying on the light clients
+that collators of Parachains have from other Parachains.
+
+MultiLocation assists this communication by identifying
+every single location that exists within the world of consensus
+systems that share a common parent, and example being all Parachains,
+as their finality derives from the consensus in the parent Relay Chain.
+A location in a consensus system is defined as an
+{\it isolatable state machine} held within global consensus.
+
+For instance, the following:
+
+\begin{align}
+    & \text{MultiLocation =}  \label{eq:multilocation1} \\
+    & \,\, ../\text{Parachain}(42)/\text{AccountKey20}(0x12...cd) \nonumber
+\end{align}
+
+can be used by one Parachain to refer to a 20-byte account ($0x12...cd$)
+that exists within a different Parachain (42), that shares the same parent consensus
+system: the Relay Chain (at '$../$').
+
+By contrast, Polkadot's XCMv3\cite{multilocationXCMv3} introduced 
+the concept of a {\it Universal Location} under which all systems
+which generate their own consensus exist, and by extension,
+all possible locations within consensus. The Universal Location is the only location
+that has no parent. In typical filesystem formatting, the Universal Location 
+can be thought of as the {\it root},
+often represented by the starting '$/$' symbol of a path.
+
+Universal Location enables the creation of routes that
+connect smart contracts in an origin blockchain
+to assets or accounts in, e.g., Polkadot, through references such as:
+\begin{align}
+     & \text{MultiLocation =}  \label{eq:multilocation2} \\
+     & \,\, /\text{Polkadot}/\text{Parachain}(42)/\text{AccountKey20}(0x12...cd) \nonumber
+\end{align}
+
+Finally, the {\it MultiAsset} part of the standard uses these concepts to
+standardize the referral to both fungible and non-fungible tokens.
+
+\subsection{Bridgeless Evolution}\label{sec:bridgless-evo}
+
+The simplest usage of LAOS for developers that want the
+ownership of assets to be managed by a different blockchain, e.g., Ethereum,
+is to simply mint assets in the origin blockchain, and 
+use a LAOS MultiLocation string, using the Universal Location '$/$' as root,
+to specify the tokenURI, 
+effectively using \bref{eq:multilocation2} to create a concrete implementation
+of pattern \bref{eq:tokenURIConsensus}:
+\bea
+\mbox{tokenURI:} \mbox{ tokenId} &\rightarrow & \mbox{LAOS MultiLocation}
+\nn 
+\label{eq:tokenURILaos}
+\eea 
+As Figure \ref{fig:patterns2nodesAs1} depicts, all that DApps need 
+to build applications that use this pattern 
+is to query a LAOS node to resolve tokenURIs and provide asset metadata.
+
+This pattern basically links the asset metadata to an updatable slot governed
+by a consensus system, with transparency, traceability,
+data availability for both current 
+and past states. And it does so in a flow which, ultimately, does not require of 
+any trusted party.
+
+In this pattern, however, asset minting is still required in the origin
+blockchain, potentially running into scalability issues or incurring 
+in high gas prices. 
+
+\subsection{Bridgeless Minting \& Evolution}\label{sec:bridgless-all}
+
+The previous pattern becomes more powerful when {\it minting} of assets,
+as opposed to only evolution, can also be offloaded to LAOS by any 
+other blockchain. We shall first discuss the nomenclature and 
+the building blocks required to build this functionality, and then
+analyze the resulting flow.
+
+This process requires two simple components: a pattern to build the {\it id} 
+of assets, and a piece of smart contract logic that utilizes the meaning
+that can be extracted from such {\it ids}.  
+
+\subsubsection{Encoding \& Decoding Methods}
+The setup starts with the usage of a concrete pattern to
+generate {\it ids} for assets, enabling the encoding of a
+generic web3 address ({\it w3a}). Let us call $Enc$ and $Dec$ the encoding
+and decoding functions, correspondingly:
+\bea
+Enc: & w3a, \Omega & \rightarrow id \,,
+\nn
+Dec: & id  & \rightarrow w3a\,,
+\label{eq:enc-dec}
+\eea
+where $\Omega$ represents any other information that the {\it id} may
+contain, e.g., a consecutive index often used to distinguish assets as they
+are minted. 
+
+$Enc$ is an injective function; in particular, two assets with different {\it id} must 
+necessarily differ in either $w3a$ or $\Omega$. Note, however, that there may be
+a large number of assets that share the same $w3a$, as made manifest
+by the $Dec$ function, which projects out all information conveyed by $\Omega$.
+
+A simple example for an $Enc$ function is provided by the binary concatenation of 
+the binary representations of $w3a$ and $\Omega$, which corresponds to a sibling
+$Dec$ function that trims the bits assigned to $w3a$.
+
+\subsubsection{Smart Contract Logic}
+The ERC721/1155 smart contract logic required in the origin blockchain must 
+contain a minor code extension in the implementation of the 
+$ownerOf$ (and related) methods. 
+
+For the sake of simplicity, let us assume that the smart contract implements 
+a simple method, $localStorage.wasEverTraded(id)$, that returns {\it true} if the asset 
+has been traded {\it at least once}. On deploy of the smart contract,
+this method naturally returns $false$ for every $id$.
+
+As customary, the contract writes to storage as assets are traded,
+allowing a method we shall call {\it localStorage.ownerOf} to return
+the new owners, and reflecting in positive returns of $wasEverTraded$.
+These methods can be used to extend $ownerOf$ as follows:
+
+\begin{algorithm}[H]
+    \SetKwFunction{GetOwner}{ownerOf(id)}
+    \SetKwData{wasEverTraded}{localStorage.wasEverTraded(id)}
+    \SetKwData{localStorage}{localStorage.ownerOf(id)}
+    \SetKwData{defaultOwner}{Dec(id)}
+    
+    \SetKwProg{Procedure}{method}{}{}
+    \Procedure{\GetOwner}{
+        \If{\wasEverTraded}
+        {
+            \KwRet \localStorage\;
+        }
+        \Else{
+            \KwRet \defaultOwner\;
+        }
+    }
+\end{algorithm}
+
+\subsubsection{Resulting Flow}
+
+The final ingredient required for bridgeless minting is implemented in LAOS,
+by simply using exactly the same encoder/decoder functions \bref{eq:enc-dec} to name assets
+in the Evochains, and declaring assets in these particular collections as {\it foreign 
+assets}, signalling that they cannot be traded in the LAOS Ownership Chain.
+
+The aforementioned smart contract logic, together with the LAOS MultiLocation
+pattern \bref{eq:tokenURILaos}, allows one single deploy of an ERC721/1155
+contract in an origin blockchain to link all assets to LAOS, while retaining 
+the management of all ownership-related aspects in the origin chain. 
+In effect, all assets ever assignable to all potential initial owners are reserved on deploy,
+and the LAOS consensus system is assigned the responsibility to {\it fill-in} the
+corresponding initially-empty registers as assets are minted, and modify them
+as they are evolved.
+
+Again, figure \ref{fig:patterns2nodesAs1} illustrates a convenient way to architecture
+nodes that would serve bridgeless minting and evolution; in this case, the ownership
+node would be one of the origin chain.
+ 

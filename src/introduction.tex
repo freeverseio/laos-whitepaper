@@ -1,0 +1,144 @@
+\section{Current NFT Landscape}\label{introduction}
+
+\subsection{Scalability and Use-Cases}\label{current-nfts}
+
+During 2017, blockchain-based Non-Fungible Tokens (NFT) became popular within the crypto 
+community, especially after the initial success of Cryptokitties (CK) \cite{kitties-contract}. 
+CK and its successors largely set the mindset of the first wave of 
+NFT-based applications; it is therefore important to understand the technical limitations that these
+had to put up with.
+
+Despite the fact that, compared to non-blockchain games, CK was an extremely limited game,
+with only a handful of actions available to users, which were often executed within days of separation,
+it managed to collapse the underlying Ethereum blockchain
+\cite{buterin2013whitepaper}, \cite{jiang2021cryptokitties}, \cite{kitties-kraken}
+when peaking around
+15K daily active addresses, accounting for 25\% of all Ethereum transactions.
+Fast forwarding 5 years, another game, Sunflower Farmers, reached a 40\% quota of all
+gas consumed by Polygon, a scaling layer-2 on top of Ethereum, with roughly 5x more activity 
+\cite{sunflower-play2earn}, \cite{sunflower-coindesk}.
+
+These severe scalability limitations inevitably impacted on the use cases initially
+implemented by different industries. On the one hand, {\it extreme scarcity} became the most exploited
+pattern, since minting and trading require on-chain usage\cite{chohan2021non}.
+While prices of real-world products necessarily derive from their production and
+distribution costs, the price of the first wave of blockchain digital items was largely
+unrelated to such costs. Artificial digital scarcity was used to increase initial selling
+price, and led to purchasers {\it speculating} on 
+the possibility of reselling the same item for a greater profit
+(see \cite{pinto2022nft} for an interesting mathematical analysis on the expectation
+of profits during the first wave of NFTs).
+
+\subsection{Mutability and Centralization}\label{tokenURI}
+
+Another pattern that arose due to lack of scalability was that of considering NFTs as
+either {\it static} collectibles or as fully centralized digital goods; indeed, in many cases,
+as both. This pattern was initiated with the rapid adoption of the ERC721 standard
+\cite{erc721}, which contains an {\it optional} method
+that returns a Universal Resource Identifier (URI) for every token:
+\be \label{eq:tokenURI}
+\mbox{tokenURI:} \mbox{ tokenId} \rightarrow \mbox{string}
+\ee 
+\noindent The standard suggested the following use: "This allows your smart contract to be interrogated [...] for details about the assets which your NFTs represent".
+
+While other methods in the ERC721 standard, such as {\it ownerOf}, allow the blockchain to be
+queried about {\it who owns} an asset, the optional {\it tokenURI} method aims at
+being queried about {\it what is owned}. 
+
+The vast majority of DApps ended up choosing one of the following approaches:
+\bea
+\label{eq:tokenURIIPFS}
+\mbox{tokenURI:} \mbox{ tokenId} &\rightarrow & \mbox{IPFS address} 
+\\
+\label{eq:tokenURICentral}
+\mbox{tokenURI:} \mbox{ tokenId} &\rightarrow &\mbox{private URL} 
+\eea 
+
+The first choice \bref{eq:tokenURIIPFS} is often made for static, immutable,
+NFTs that represent assets of high value; a representative example is Beeple's
+{\it Everydays—The First 5,000 Days}\cite{beeple}, sold at Christie’s for \$69.3M \cite{kugler2021non}.
+In this case, the answer to {\it what is owned} refers users to the Inter-Planetary
+Filesystem (IPFS \cite{benet2014ipfs}), which has the following two essential properties:
+\begin{itemize}
+    \item it is a {\it content addressed} system, whereby the address of a digital file
+    is the result of applying a certain Hash function $H$: {IPFS address = $H$(content)};
+    \item it is decentralized in nature, due to its peer-to-peer protocol.
+\end{itemize}
+When using the IPFS pattern \bref{eq:tokenURIIPFS}, the first property ensures that the blockchain 
+returns an address that uniquely describes the content of the NFT. Together with the 
+second property, the result is that {\it what is owned} can be answered in a fully 
+trustless manner, without the need to query any trusted 3rd party.
+
+The downside of pattern \bref{eq:tokenURIIPFS} is that it leads to a clash between asset 
+mutability and scalability. Since any minor change in the asset's
+content would necessarily map it to a different IPFS address, an 
+on-chain transaction would need to be used on every change of every asset. 
+Thus, pattern \bref{eq:tokenURIIPFS} is mostly used for immutable NFTs.
+
+The centralized pattern \bref{eq:tokenURICentral} has been the choice for many DApps,
+especially those that required some degree of asset mutability.
+It allows developers to minimize the use
+of the blockchain, by simply storing a link to external, privately-owned URLs, which
+host {\it what is owned}, the asset metadata. A representative example 
+is Sorare \cite{sorare},
+a popular web3-based sports fantasy game, where the data of the NFTs
+is stored in the company's private servers\footnote{As a concrete example, at the time of writing,
+the blockchain method {\it tokenURI} for a Lionel Messi NFT \cite{messiOpenSea} pointed to
+this Sorare's owned URL \cite{messiOnSorare}}
+
+With the centralized pattern \bref{eq:tokenURICentral}, mutability is simply achieved by changing the data
+provided by each company's private servers. This has several drawbacks. The most important
+consequence is a critical loss of the core principles
+of blockchain technology, as users must rely on private companies
+for an understanding of their own holdings, thereby undermining decentralization.
+Furthermore, these companies can change such data without leaving any trace, to the extreme 
+of making it unavailable. Such events can even happen involuntarily, for example, 
+via hacks, or because a company ceases operations, or is forced to. 
+Private companies become the custodian of the attributes, and by extension,
+the value of the NFT, and assume the risks associated to it. 
+We shall refer to this particular highly centralized practice as the {\it elephant in the room}.
+
+\subsection{Insecure Bridges}\label{bridges}
+
+Finally, the aforementioned limitations have also forced DApp developers 
+to make undesired compromises when selecting the blockchain to build on.
+Concerns around gas costs, availability of the underlying coin, user base 
+of the existing DeFi ecosystem, or degree of decentralization and
+security are weighted against the needs of each specific application.
+
+Bridges are often built to allow users to migrate assets across blockchains,
+which tends to be a complex UX process.
+But building bridges is hard. Almost every relevant
+bridge built to date requires some level of centralization,
+and many of them have been hacked\cite{lee2022sok},
+resulting in millions of stolen funds. Examples include
+widely used bridges between Ethereum and Solana\cite{eth-solana},
+bridges required to play {\it Axie Infinity},
+the most popular NFT-based game at the time\cite{axie-bridge-1}, \cite{axie-bridge-2},
+as well as vulnerarilities of up to \$850M that 
+were live for some time in the Polygon to Ethereum bridge,
+but fixed before being exploited\cite{polygon-hack}.
+
+
+\subsection{Growing Legal Concerns}\label{summary}
+
+As discussed, initial limitations of fully programmable-blockchain technology
+led to many of the early NFT use cases relying on some combination of
+extreme scarcity and speculation, making choices between an immutable approach, 
+or highly centralized practices, and often forcing users to go through insecure bridges.
+
+Legislation is indeed starting to pay closer attention to centralized NFT flows. A relevant
+example is the recent class-action lawsuit filed against the popular NFT-based application 
+NBA Top Shot\cite{nba}, to decide whether or not their NFTs should be considered
+unregistered securities\cite{dapper-labs-nft-ruling}. Although this lawsuit 
+does not deal with the {\it elephant in the room} directly, the judge 
+did argue that users were forced to rely on the running of the platform by a few
+private actors,
+leading to {\it expectation of profit being “derived from the efforts of others”}.
+
+Although legislation in the web3 space is a highly complex, rapidly evolving field,
+it may well be the case that similar NFT-as-securities lawsuits follow soon, 
+given the aforementioned custodian role that many private companies are currently assuming. 
+
+
+
