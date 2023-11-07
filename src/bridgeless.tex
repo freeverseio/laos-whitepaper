@@ -89,15 +89,19 @@ data availability for both current
 and past states. And it does so in a flow which, ultimately, does not require of 
 any trusted party.
 
-In this pattern, however, asset minting is still required in the origin
+In this pattern, however, one transaction per asset mint is still required in the origin
 blockchain, potentially running into scalability issues or incurring 
 in high gas prices. 
 
 \subsection{Bridgeless Minting \& Evolution}\label{sec:bridgless-all}
 
-The previous pattern becomes more powerful when {\it minting} of assets,
-as opposed to only evolution, can also be offloaded to LAOS by any 
-other blockchain. We shall first discuss the nomenclature and 
+The previous pattern can be extended to make a fully 
+optimal use of the origin blockchain, to the extreme
+that one single transaction to the origin blockchain is required,
+on deploy time. After this initial transaction,
+{\it all minting and evolution can be offloaded to LAOS}.
+
+We shall first discuss the nomenclature and 
 the building blocks required to build this functionality, and then
 analyze the resulting flow.
 
