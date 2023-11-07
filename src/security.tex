@@ -14,7 +14,7 @@ comprehensive studies of their attack vectors and potential mitigation.
 The Ownership Parachain will
 implement the default Parachain pattern that relies on the Polkadot
 Relay Chain to provide block finality \cite{parachain-protocol}, \cite{parachain-protocol2}.
-This protocol enables efficient inhomogeneous sharding,
+This protocol enables efficient heterogeneous sharding,
 and has been live in mainnet, in Kusama first, since
 October'19, and then in Polkadot, since March'20.
 
@@ -22,7 +22,7 @@ Parachains are free to decide their runtime and are encouraged to focus on
 specialization, in contrast to the one-runtime-fits-all
 homogeneous sharding being built in Ethereum 2.0.
 LAOS will diligently adhere to this pattern,
-specializing in all aspects relevant to Living Assets.
+specializing in all aspects relevant to Digital Ownership.
 The Ownership Chain will use the default Parachain pattern:
 Nominated Proof of Stake (NPoS) consensus algorithm,
 with GRANDPA providing finality over BABE block production.
@@ -60,15 +60,15 @@ of a small set of randomly queried data.
 
 In summary, the standard Parachain-in-Polkadot level of security 
 protects all features assigned to the Ownership Parachain,
-including transfers of Living Assets among owners as well as to
+including transfers of LAOS assets and tokens among owners as well as to
 sibling Parachains, management of the LAOS token, 
-transaction fees, treasury funding, storage of Evochain states and 
-management of their runtimes.
+transaction fees, treasury funding, storage of LAOS Relay Chain and Evochain states,
+and management of their runtimes.
 
 \subsection{Trustless Bridge}\label{sec:security-bridge}
 
-The design of the bridges that will connect the Ownership Chain 
-and the Evochains is built around the same technology that 
+The design of the bridge that will connect the Ownership Chain 
+and the LAOS Relay Chain is built around the same technology that 
 will connect Polkadot and Kusama via BridgeHub\cite{bridgehub}.
 
 This bridge design decouples the consensus mechanism
@@ -94,49 +94,43 @@ for a thorough analysis of attack vectors.
 Regarding data withholding attack vectors,
 it is important to consider that any actor can 
 relay block data and the corresponding transition proofs
-between the Ownership Chain and the Evochains.
+between the Ownership Chain and the LAOS Relay Chain.
 The attack can be straightforwardly mitigated by having at least one
 actor with incentives in the LAOS platform running a node of the
-Evochain, even if in read-only mode, capable of relaying 
+LAOS Relay Chain, even if in read-only mode, capable of relaying 
 the Evochain data as new blocks are produced.
 
-Moreover, the Evochain validators have their own incentives
+Moreover, the LAOS Relay Chain validators have their own incentives
 to relay this data because they receive rewards
 in the form of LAOS tokens
 upon inclusion of new valid blocks in the Ownership Chain.
 
 
-\subsection{Evochains}\label{sec:security-evochains}
-
-Evochains are Substrate-based solo chains with GRANDPA finality,
-supporting asset mint and evolution at protocol level.
-The security of Evochains depends
+\subsection{LAOS Relay Chain}\label{sec:security-laos-relay}
+ 
+The LAOS Relay Chain is an instance of Polkadot's Substrate-based Relay Chain,
+with GRANDPA finality.
+As such, its security depends
 on the standard game-theoretical incentive system that
 leads to more than two-thirds of their validators following
-the protocol honestly,
-as in any Substrate-based chain with GRANDPA finality.
+the protocol honestly.
+
 A comprehensive analysis of GRANDPA, including a listing of 
 attack vectors and their potential mitigation, can be found in\cite{grandpa}.
 
-Evochain validators will be rewarded for including valid mint and evolve
-transactions through transaction fees in LAOS tokens obtained from
+LAOS Relay Chain validators will be rewarded for including valid blocks
+from the Evochains, through transaction fees in LAOS tokens obtained from
 the Ownership Chain via the trustless bridge. Likewise, they will be rewarded
-when new block headers are correctly included in the Ownership Chain,
+when new block headers of the LAOS Relay Chain are correctly included in the Ownership Chain,
 in this case, in native LAOS tokens. 
-This incentive system encourages Evochain validators
+This incentive system encourages LAOS Relay Chain validators
 to not only provide data to the bridge relayers
 but also potentially take on the role of bridge relayers themselves.
 
-The scalable architecture discussed in Section \ref{sec:architecture-future} 
-will enable the Evochain validators, as soon as their number is 
-sufficiently large, to greatly scale transaction throughput
-while providing the same level of
-security, via the standard Relay Chain pattern. We refer
-again to \cite{grandpa} for a comprehensive security analysis of 
-the Relay Chain protocol.
+\subsection{Evochains}\label{sec:security-evochains}
 
-
-
-
-
-
+Evochains are Parachains of the LAOS Relay Chain,
+supporting asset mint and evolution at protocol level.
+As such, the same security considerations discussed for the Ownership Parachains
+(Section ~\ref{sec:security-parachain}) apply to the Evochains, replacing
+Polkadot's validators by LAOS Relay Chain validators.
